@@ -1,6 +1,6 @@
-# Suivi du portfolio — intégration préparée, non activée
+# Suivi du portfolio — Matomo Cloud
 
-Cette branche prépare l’intégration ; aucun suivi ne sera actif tant que Matomo ne sera pas configuré. Le fichier index.html reprend le HTML téléchargé de votre portfolio ; seul un chargement de analytics.js a été ajouté. Conserver tous les assets existants dans le dépôt.
+Le suivi est configuré pour https://hatimchemji.matomo.cloud/, site n° 1, et ne démarre qu’après acceptation du visiteur. L’activation de cette destination a été autorisée par le propriétaire. Le fichier index.html reprend le HTML téléchargé de votre portfolio ; seul un chargement de analytics.js a été ajouté. Conserver tous les assets existants dans le dépôt.
 
 ## 1. Configurer Matomo
 Créer ou utiliser une instance Matomo hébergée ou auto-hébergée. Ajouter le site https://hatimchemji.github.io/. Récupérer l’URL HTTPS de l’instance et le numéro du site, disponibles dans le code de suivi. Ne transmettre aucun mot de passe ni token API. Les deux valeurs publiques suffisent pour finaliser le code.
@@ -23,3 +23,7 @@ Visite de page ; domaine de provenance sans chemin ni paramètres ; clic LinkedI
 Ce suivi démarre après activation et consentement ; il ne reconstruit pas les visites passées. Les bloqueurs et robots peuvent modifier les décomptes. Aucun nom ou e-mail de visiteur n’est déduit. L’IP n’est pas une identité ni une adresse postale. Pas de promesse d’anonymat : Matomo reçoit l’IP lors de la connexion et peut traiter d’autres données techniques. Le navigateur conserve uniquement le choix de suivi pendant 180 jours. Le signal Do Not Track / Global Privacy Control bloque le suivi. En cas de stockage local indisponible, un accord reste valable pour la page courante, avec retrait possible ; il n’est pas mémorisé après fermeture.
 
 Documentation : https://matomo.org/faq/general/configure-privacy-settings-in-matomo/ et https://developer.matomo.org/guides/tracking-javascript-guide
+
+
+## État de la configuration
+MATOMO_URL et SITE_ID sont renseignés. Le script est chargé depuis le CDN Matomo indiqué par le code d’installation du compte. Le masquage des IP et la conservation de 90 jours sont des réglages serveur recommandés, non vérifiés par cette intégration. La notice ne les présente pas comme déjà appliqués. Vérifier ces paramètres dans Matomo et préciser ensuite les durées réelles dans la notice.
