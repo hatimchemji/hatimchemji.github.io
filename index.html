@@ -117,4 +117,5 @@
     document.querySelectorAll('[data-cert]').forEach(card=>{const path=certificateFiles[card.dataset.cert];if(!path)return;const link=document.createElement('a');link.className='cert-proof';link.href=path;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Voir mon attestation PDF ↗';card.append(link)});
   })();
 </script>
+<script src="analytics.js" defer></script>
 </body></html>
