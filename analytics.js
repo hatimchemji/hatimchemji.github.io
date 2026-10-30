@@ -1,8 +1,8 @@
 /* Matomo : renseigner ces deux valeurs publiques après création du site. */
 (() => {
   'use strict';
-  const MATOMO_URL = ''; // Exemple : https://votre-instance.matomo.cloud/
-  const SITE_ID = ''; // Numéro fourni par Matomo. Ne jamais mettre de token API ici.
+  const MATOMO_URL = 'https://hatimchemji.matomo.cloud/';
+  const SITE_ID = '1'; // Numéro fourni par Matomo. Ne jamais mettre de token API ici.
   if (!MATOMO_URL || !/^[1-9]\d*$/.test(SITE_ID)) return;
   let endpoint;
   try { endpoint = new URL(MATOMO_URL); } catch { return; }
@@ -35,7 +35,7 @@
       try { referrer = document.referrer ? new URL(document.referrer).origin + '/' : ''; } catch {}
       queue.push(['setReferrerUrl', referrer], ['setConsentGiven'], ['trackPageView']);
       const script = document.createElement('script');
-      script.async = true; script.src = base + 'matomo.js';
+      script.async = true; script.src = 'https://cdn.matomo.cloud/hatimchemji.matomo.cloud/matomo.js';
       script.referrerPolicy = 'no-referrer';
       document.head.appendChild(script);
       loaded = true;
@@ -50,11 +50,11 @@
   document.head.appendChild(style);
   const banner = document.createElement('section');
   banner.id = 'hc-privacy'; banner.setAttribute('aria-label', 'Préférences de statistiques');
-  banner.innerHTML = '<strong>Statistiques de visite</strong><p>Avec votre accord, Hatim CHEMJI utilise Matomo pour mesurer les visites et les clics sur ce portfolio. Aucun nom, e-mail ou contenu saisi dans un formulaire n’est collecté par ce suivi. Vous pouvez refuser et changer votre choix à tout moment.</p><p>La connexion au service transmet votre adresse IP ; son masquage est configuré côté Matomo. Le choix est conservé 6 mois dans ce navigateur.</p><div id="hc-privacy-actions"><button type="button" data-choice="yes">Accepter</button><button type="button" data-choice="no">Refuser</button><button type="button" data-policy>Confidentialité</button></div>';
+  banner.innerHTML = '<strong>Statistiques de visite</strong><p>Avec votre accord, Hatim CHEMJI utilise Matomo pour mesurer les visites et les clics sur ce portfolio. Aucun nom, e-mail ou contenu saisi dans un formulaire n’est collecté par ce suivi. Vous pouvez refuser et changer votre choix à tout moment.</p><p>La connexion au service transmet votre adresse IP ; son éventuel masquage dépend des réglages de Matomo. Le choix est conservé 6 mois dans ce navigateur.</p><div id="hc-privacy-actions"><button type="button" data-choice="yes">Accepter</button><button type="button" data-choice="no">Refuser</button><button type="button" data-policy>Confidentialité</button></div>';
   document.body.appendChild(banner);
   const policy = document.createElement('dialog');
   policy.setAttribute('aria-label', 'Confidentialité des statistiques');
-  policy.innerHTML = '<div style="padding:24px;max-width:650px"><h2>Confidentialité</h2><p>Responsable : Hatim CHEMJI — hatimchemji00@gmail.com.</p><p>Finalité : comprendre la fréquentation et l’utilisation de ce portfolio. Base du suivi facultatif : votre consentement, révocable via « Statistiques et confidentialité ».</p><p>Données : pages consultées, date, clics, domaine de provenance, informations techniques du navigateur et localisation approximative selon la configuration de Matomo. Ces informations ne révèlent pas automatiquement votre identité. Aucun enregistrement de session ou de frappe clavier n’est activé.</p><p>Prestataire de mesure : Matomo. Instance : <span data-instance></span>. Conservation des données de visite : 90 jours ; choix du navigateur : 180 jours. Les statistiques agrégées peuvent être conservées plus longtemps.</p><p>Pour exercer vos droits d’accès, d’effacement ou de retrait du consentement, contactez hatimchemji00@gmail.com. Vous pouvez également adresser une réclamation à la CNIL. GitHub assure l’hébergement du portfolio et traite ses propres journaux techniques.</p><form method="dialog"><button class="btn btn-outline">Fermer</button></form></div>';
+  policy.innerHTML = '<div style="padding:24px;max-width:650px"><h2>Confidentialité</h2><p>Responsable : Hatim CHEMJI — hatimchemji00@gmail.com.</p><p>Finalité : comprendre la fréquentation et l’utilisation de ce portfolio. Base du suivi facultatif : votre consentement, révocable via « Statistiques et confidentialité ».</p><p>Données : pages consultées, date, clics, domaine de provenance, informations techniques du navigateur et localisation approximative selon la configuration de Matomo. Ces informations ne révèlent pas automatiquement votre identité. Aucun enregistrement de session ou de frappe clavier n’est activé.</p><p>Prestataire de mesure : Matomo. Instance : <span data-instance></span>. Le choix du navigateur est conservé 180 jours. La durée de conservation des journaux et rapports dépend des réglages de cette instance Matomo ; contactez le responsable pour connaître les durées appliquées ou demander un effacement.</p><p>Pour exercer vos droits d’accès, d’effacement ou de retrait du consentement, contactez hatimchemji00@gmail.com. Vous pouvez également adresser une réclamation à la CNIL. GitHub assure l’hébergement du portfolio et traite ses propres journaux techniques.</p><form method="dialog"><button class="btn btn-outline">Fermer</button></form></div>';
   policy.querySelector('[data-instance]').textContent = endpoint.hostname;
   document.body.appendChild(policy);
   banner.querySelector('[data-policy]').addEventListener('click', () => policy.showModal());
