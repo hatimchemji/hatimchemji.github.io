@@ -1,90 +1,76 @@
-/* Matomo : renseigner ces deux valeurs publiques après création du site. */
+/* Mesure d’audience : maintenir le mode CNIL actif dans Matomo. */
 (() => {
   'use strict';
-  const MATOMO_URL = 'https://hatimchemji.matomo.cloud/';
-  const SITE_ID = '1'; // Numéro fourni par Matomo. Ne jamais mettre de token API ici.
-  if (!MATOMO_URL || !/^[1-9]\d*$/.test(SITE_ID)) return;
-  let endpoint;
-  try { endpoint = new URL(MATOMO_URL); } catch { return; }
-  if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) return;
-  const base = endpoint.href.replace(/\/?$/, '/');
-  const key = 'hatim-analytics-choice-v1';
-  const lifetime = 180 * 86400000;
-  let accepted = false, loaded = false, memoryChoice = null;
+  const CNIL_CONFIGURATION_VERIFIED = true;
+  const base = 'https://hatimchemji.matomo.cloud/';
+  const key = 'hc_audience_optout';
   const queue = window._paq = window._paq || [];
   const dnt = navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl === true;
-  function choice() {
+  let loaded = false, memoryOptOut = false;
+  function optedOut() {
+    const cookie = document.cookie.split(';').some(c => c.trim() === key + '=1');
+    let previousRefusal = false;
     try {
-      const value = JSON.parse(localStorage.getItem(key));
-      return value && typeof value.accept === 'boolean' && value.expires > Date.now() ? value.accept : null;
-    } catch { return memoryChoice; }
+      const old = JSON.parse(localStorage.getItem('hatim-analytics-choice-v1'));
+      previousRefusal = old?.accept === false && old.expires > Date.now();
+    } catch {}
+    return memoryOptOut || cookie || previousRefusal;
   }
-  function event(category, action, name) {
-    if (accepted && choice() === true) queue.push(['trackEvent', category, action, name]);
-  }
-  function grant() {
-    if (accepted || dnt) return;
-    accepted = true;
+  function eligible() { return CNIL_CONFIGURATION_VERIFIED && !dnt && !optedOut(); }
+  function start() {
+    if (!eligible()) return;
     if (!loaded) {
-      queue.push(['requireConsent'], ['disableCookies'], ['setDoNotTrack', true],
-        ['setTrackerUrl', base + 'matomo.php'], ['setSiteId', SITE_ID],
-        ['setCustomUrl', location.origin + location.pathname],
-        ['setDocumentTitle', 'Portfolio Hatim CHEMJI']);
-      // Conserver uniquement le domaine de provenance, sans chemin ni paramètres.
-      let referrer = '';
-      try { referrer = document.referrer ? new URL(document.referrer).origin + '/' : ''; } catch {}
-      queue.push(['setReferrerUrl', referrer], ['setConsentGiven'], ['trackPageView']);
+      queue.push(['disableCookies'], ['disableBrowserFeatureDetection'], ['setDoNotTrack', true],
+        ['setTrackerUrl', base + 'matomo.php'], ['setSiteId', '1'],
+        ['setCustomUrl', 'https://hatimchemji.github.io/'],
+        ['setDocumentTitle', 'Portfolio Hatim CHEMJI'], ['setReferrerUrl', ''], ['trackPageView']);
       const script = document.createElement('script');
-      script.async = true; script.src = 'https://cdn.matomo.cloud/hatimchemji.matomo.cloud/matomo.js';
+      script.async = true;
+      script.src = 'https://cdn.matomo.cloud/hatimchemji.matomo.cloud/matomo.js';
       script.referrerPolicy = 'no-referrer';
       document.head.appendChild(script);
       loaded = true;
-    } else queue.push(['setConsentGiven'], ['trackPageView']);
+    } else queue.push(['forgetUserOptOut'], ['trackPageView']);
   }
-  function revoke() {
-    accepted = false;
-    if (loaded) queue.push(['forgetConsentGiven']);
+  function event(category, action, name) {
+    if (eligible()) queue.push(['trackEvent', category, action, name]);
   }
-  const style = document.createElement('style');
-  style.textContent = `#hc-privacy[hidden]{display:none}#hc-privacy{position:fixed;bottom:18px;left:18px;right:18px;max-width:650px;z-index:1000;padding:22px;background:#101b2c;color:#fff;border:1px solid #466879;border-radius:16px;box-shadow:0 8px 35px #0008}#hc-privacy p{margin:8px 0 16px;font-size:14px}#hc-privacy-actions{display:flex;gap:12px;flex-wrap:wrap}#hc-privacy button,#hc-privacy-link{cursor:pointer;padding:8px 15px;border:1px solid #7bbab9;border-radius:8px;background:#172f3a;color:#fff}#hc-privacy button:focus-visible,#hc-privacy-link:focus-visible{outline:3px solid #8de5d1;outline-offset:3px}#hc-privacy-link{margin:14px;font-size:13px}`;
-  document.head.appendChild(style);
-  const banner = document.createElement('section');
-  banner.id = 'hc-privacy'; banner.setAttribute('aria-label', 'Préférences de statistiques');
-  banner.innerHTML = '<strong>Statistiques de visite</strong><p>Avec votre accord, Hatim CHEMJI utilise Matomo pour mesurer les visites et les clics sur ce portfolio. Aucun nom, e-mail ou contenu saisi dans un formulaire n’est collecté par ce suivi. Vous pouvez refuser et changer votre choix à tout moment.</p><p>La connexion au service transmet votre adresse IP ; son éventuel masquage dépend des réglages de Matomo. Le choix est conservé 6 mois dans ce navigateur.</p><div id="hc-privacy-actions"><button type="button" data-choice="yes">Accepter</button><button type="button" data-choice="no">Refuser</button><button type="button" data-policy>Confidentialité</button></div>';
-  document.body.appendChild(banner);
   const policy = document.createElement('dialog');
-  policy.setAttribute('aria-label', 'Confidentialité des statistiques');
-  policy.innerHTML = '<div style="padding:24px;max-width:650px"><h2>Confidentialité</h2><p>Responsable : Hatim CHEMJI — hatimchemji00@gmail.com.</p><p>Finalité : comprendre la fréquentation et l’utilisation de ce portfolio. Base du suivi facultatif : votre consentement, révocable via « Statistiques et confidentialité ».</p><p>Données : pages consultées, date, clics, domaine de provenance, informations techniques du navigateur et localisation approximative selon la configuration de Matomo. Ces informations ne révèlent pas automatiquement votre identité. Aucun enregistrement de session ou de frappe clavier n’est activé.</p><p>Prestataire de mesure : Matomo. Instance : <span data-instance></span>. Le choix du navigateur est conservé 180 jours. La durée de conservation des journaux et rapports dépend des réglages de cette instance Matomo ; contactez le responsable pour connaître les durées appliquées ou demander un effacement.</p><p>Pour exercer vos droits d’accès, d’effacement ou de retrait du consentement, contactez hatimchemji00@gmail.com. Vous pouvez également adresser une réclamation à la CNIL. GitHub assure l’hébergement du portfolio et traite ses propres journaux techniques.</p><form method="dialog"><button class="btn btn-outline">Fermer</button></form></div>';
-  policy.querySelector('[data-instance]').textContent = endpoint.hostname;
+  policy.id = 'hc-audience-policy';
+  policy.setAttribute('aria-labelledby', 'hc-audience-title');
+  policy.innerHTML = '<div style="padding:24px;max-width:650px"><h2 id="hc-audience-title">Confidentialité</h2><p>Responsable : Hatim CHEMJI — hatimchemji00@gmail.com.</p><p>Ce portfolio utilise une mesure d’audience limitée aux statistiques globales de consultation et d’utilisation de ses fonctionnalités. Prestataire : Matomo Cloud, instance hatimchemji.matomo.cloud.</p><p>Aucun nom, e-mail, contenu saisi, identifiant de compte ou paramètre de campagne n’est envoyé par ce module. Aucun cookie de suivi, enregistrement de session ou suivi entre sites n’est activé. La connexion au prestataire lui transmet techniquement votre IP ; le mode CNIL de Matomo en limite le traitement et restreint les rapports à des statistiques agrégées.</p><p>Cette mesure sert uniquement à comprendre la fréquentation et l’utilisation du portfolio. Les données brutes sont supprimées après 759 jours au maximum ; les rapports statistiques agrégés peuvent être conservés plus longtemps. Pour exercer vos droits, demander un effacement ou connaître les réglages appliqués, contactez le responsable. Vous pouvez adresser une réclamation à la CNIL.</p><p>Vous pouvez vous opposer à cette mesure ci-dessous. Un cookie mémorise votre opposition pendant 180 jours dans ce navigateur. Le signal « Ne pas suivre » est respecté. GitHub héberge le site et traite ses propres journaux techniques.</p><p role="status" data-status></p><button class="btn btn-outline" type="button" data-optout></button><form method="dialog" style="margin-top:16px"><button class="btn btn-outline">Fermer</button></form></div>';
   document.body.appendChild(policy);
-  banner.querySelector('[data-policy]').addEventListener('click', () => policy.showModal());
   const preferences = document.createElement('button');
-  preferences.type = 'button'; preferences.id = 'hc-privacy-link';
-  preferences.textContent = 'Statistiques et confidentialité';
+  preferences.type = 'button';
+  preferences.textContent = 'Confidentialité';
+  preferences.className = 'btn btn-outline';
+  preferences.style.margin = '14px';
   (document.querySelector('footer') || document.body).appendChild(preferences);
-  preferences.addEventListener('click', () => { banner.hidden = false; banner.querySelector('button').focus(); });
-  banner.querySelectorAll('[data-choice]').forEach(button => button.addEventListener('click', () => {
-    const allow = button.dataset.choice === 'yes' && !dnt;
-    memoryChoice = allow;
-    try { localStorage.setItem(key, JSON.stringify({accept: allow, expires: Date.now() + lifetime})); } catch {}
-    allow ? grant() : revoke(); banner.hidden = true; preferences.focus();
-  }));
-  const remembered = choice();
-  banner.hidden = remembered !== null || dnt;
-  if (remembered === true && !dnt) grant();
-  // Synchroniser le retrait du consentement entre les onglets.
-  window.addEventListener('storage', e => {
-    if (e.key !== key && e.key !== null) return;
-    const allow = choice();
-    if (allow === true && !dnt) grant(); else revoke();
-    banner.hidden = allow !== null || dnt;
+  const status = policy.querySelector('[data-status]');
+  const button = policy.querySelector('[data-optout]');
+  function refresh() {
+    status.textContent = !CNIL_CONFIGURATION_VERIFIED ? 'Mesure d’audience actuellement désactivée.' : dnt ? 'Mesure désactivée par la préférence de votre navigateur.' : optedOut() ? 'Vous êtes exclu de la mesure d’audience.' : 'La mesure d’audience est active.';
+    button.textContent = optedOut() ? 'Autoriser la mesure d’audience' : 'M’opposer à la mesure d’audience';
+    button.disabled = dnt || !CNIL_CONFIGURATION_VERIFIED;
+  }
+  preferences.addEventListener('click', () => { refresh(); policy.showModal(); });
+  button.addEventListener('click', () => {
+    const decline = !optedOut();
+    memoryOptOut = decline;
+    document.cookie = key + '=' + (decline ? '1' : '') + '; Max-Age=' + (decline ? 15552000 : 0) + '; Path=/; SameSite=Lax; Secure';
+    try { localStorage.removeItem('hatim-analytics-choice-v1'); } catch {}
+    if (decline && loaded) queue.push(['optUserOut']);
+    if (!decline) start();
+    refresh();
   });
-  // Une session expirée ne doit plus envoyer d’événements.
-  setInterval(() => { if (accepted && choice() !== true) { revoke(); banner.hidden = false; } }, 60000);
+  window.addEventListener('storage', e => {
+    if (e.key === 'hatim-analytics-choice-v1' && !eligible() && loaded) queue.push(['optUserOut']);
+  });
+  start();
   document.addEventListener('click', e => {
-    if (!accepted || !(e.target instanceof Element)) return;
+    if (!eligible() || !(e.target instanceof Element)) return;
     const el = e.target.closest('a,button'); if (!el) return;
-    if (el.closest('#hc-privacy') || el.closest('dialog[aria-label="Confidentialité des statistiques"]') || el === preferences) return;
+    if (el.closest('#hc-audience-policy') || el === preferences) return;
     if (el.matches('[data-contact-open]')) return event('Contact', 'ouvrir', 'coordonnees');
     if (el.matches('[data-filter]')) {
       const value = el.dataset.filter;
@@ -109,4 +95,5 @@
   document.addEventListener('toggle', e => {
     if (e.target instanceof HTMLDetailsElement && e.target.open) event('Projets', 'details', 'ouvrir');
   }, true);
+
 })();

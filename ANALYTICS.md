@@ -1,29 +1,22 @@
-# Suivi du portfolio — Matomo Cloud
+# Mesure d’audience sans bannière
 
-Le suivi est configuré pour https://hatimchemji.matomo.cloud/, site n° 1, et ne démarre qu’après acceptation du visiteur. L’activation de cette destination a été autorisée par le propriétaire. Le fichier index.html reprend le HTML téléchargé de votre portfolio ; seul un chargement de analytics.js a été ajouté. Conserver tous les assets existants dans le dépôt.
+Cette branche prépare des statistiques globales de consultation et de clics. Elle ne permet pas d’identifier les visiteurs. Aucun suivi n’est envoyé tant que CNIL_CONFIGURATION_VERIFIED reste false dans analytics.js. La publication réactive la mesure d’audience sans bannière.
 
-## 1. Configurer Matomo
-Créer ou utiliser une instance Matomo hébergée ou auto-hébergée. Ajouter le site https://hatimchemji.github.io/. Récupérer l’URL HTTPS de l’instance et le numéro du site, disponibles dans le code de suivi. Ne transmettre aucun mot de passe ni token API. Les deux valeurs publiques suffisent pour finaliser le code.
+## Réglages serveur indispensables
+Dans Matomo, connecté en superutilisateur : Administration > Privacy/Confidentialité > Compliance/Conformité. Choisir le site 1 (hatimchemji.github.io), activer Enforce compliance where possible et enregistrer. Examiner la totalité de l’auto-évaluation et résoudre les éléments Unknown/non-compliant, y compris le mécanisme d’opposition. Ne pas activer d’imports externes ou d’intégrations publicitaires.
 
-Dans analytics.js, renseigner MATOMO_URL et SITE_ID en tête de fichier. Sans ces valeurs, aucun service de statistiques n’est chargé et aucune bannière n’apparaît.
+Le mode doit notamment restreindre les rapports aux statistiques agrégées, désactiver journaux de visites/profils individuels et sessions, masquer les IP, minimiser les données techniques et imposer les limites de conservation. Vérifier les effets annoncés avant d’enregistrer, notamment si une fonction existante doit être supprimée. Ne pas affirmer la conformité globale du site sur le seul résultat de cet outil.
 
-Avant activation, dans Matomo : masquer les IP (au moins 2 octets, voire intégralement selon le besoin), supprimer automatiquement les journaux de visites au bout de 90 jours, vérifier l’accès privé au tableau de bord et compléter la notice avec l’entité du prestataire, son hébergement et les éventuels transferts. La notice livrée est un modèle à adapter à cette instance réelle. Ne pas activer User ID, empreinte navigateur, enregistrement de sessions ou capture de formulaires. Le réglage du masquage et de la conservation est côté serveur, pas dans le JavaScript.
+Documentation officielle : https://fr.matomo.org/faq/how-do-i-configure-matomo-without-tracking-consent-for-french-visitors-cnil-exemption/
 
-## 2. Mettre en ligne
-Option directe : renseigner les valeurs Matomo sur cette branche, vérifier les réglages serveur et fusionner la pull request vers main pour déployer via GitHub Pages.
-Option manuelle : dans le dépôt GitHub, Add file > Upload files ; glisser index.html et analytics.js à la racine puis Commit changes. Ne pas supprimer les assets existants. Attendre la fin du déploiement GitHub Pages.
+## Comportement du code
+Pas de bannière ni de demande d’acceptation. Un bouton Confidentialité dans le pied de page ouvre la notice et le mécanisme d’opposition. Le refus est conservé 180 jours par un cookie de préférence. Les refus antérieurs encore valides sont respectés. Do Not Track et Global Privacy Control désactivent la mesure. Les cookies de suivi et la détection des fonctionnalités du navigateur sont désactivés. Pas d’identifiant personnel, formulaire, référent, paramètre de campagne ou URL arbitraire transmis par le module. Événements limités à la présence sur la page et à l’utilisation des boutons/liens.
 
-## 3. Vérifier
-Ouvrir le portfolio dans une fenêtre privée, sans bloqueur, avec Do Not Track désactivé pour ce test. Avant choix et après Refuser, aucune requête vers l’instance Matomo ne doit partir. Accepter : le navigateur charge matomo.js puis envoie la page à matomo.php. Cliquer sur LinkedIn, Me contacter et un filtre de projets. Vérifier les événements dans le tableau de bord Matomo. Ouvrir Statistiques et confidentialité puis Refuser : les clics suivants ne doivent plus produire de suivi. Tester aussi une actualisation après refus et après acceptation.
+## Validation et maintenance
+Après vérification des réglages serveur et de la notice, passer CNIL_CONFIGURATION_VERIFIED à true et publier la branche. Confirmer les rapports agrégés dans Matomo. Tester l’opposition : après clic sur M’opposer à la mesure d’audience, aucun événement supplémentaire ne doit partir, y compris après actualisation. Vérifier que les rapports individuels ne sont pas accessibles. Sans vérification serveur, laisser le module désactivé.
 
-## Mesures préparées
-Visite de page ; domaine de provenance sans chemin ni paramètres ; clic LinkedIn/e-mail/téléphone ; ouverture de la fenêtre de contact ; navigation entre sections ; filtres de projets ; ouverture des détails ; liens sortants ; clic sur document PDF si un lien existe. Aucun bouton CV ni formulaire n’a été ajouté. Le site actuel n’expose pas de lien de CV actif dans le HTML récupéré. Un clic document ne prouve pas un téléchargement réussi.
-
-## Limites
-Ce suivi démarre après activation et consentement ; il ne reconstruit pas les visites passées. Les bloqueurs et robots peuvent modifier les décomptes. Aucun nom ou e-mail de visiteur n’est déduit. L’IP n’est pas une identité ni une adresse postale. Pas de promesse d’anonymat : Matomo reçoit l’IP lors de la connexion et peut traiter d’autres données techniques. Le navigateur conserve uniquement le choix de suivi pendant 180 jours. Le signal Do Not Track / Global Privacy Control bloque le suivi. En cas de stockage local indisponible, un accord reste valable pour la page courante, avec retrait possible ; il n’est pas mémorisé après fermeture.
-
-Documentation : https://matomo.org/faq/general/configure-privacy-settings-in-matomo/ et https://developer.matomo.org/guides/tracking-javascript-guide
+La préparation technique ne garantit pas l’exemption de consentement : elle dépend de l’ensemble des critères de l’auto-évaluation et des usages réels de l’instance.
 
 
-## État de la configuration
-MATOMO_URL et SITE_ID sont renseignés. Le script est chargé depuis le CDN Matomo indiqué par le code d’installation du compte. Le masquage des IP et la conservation de 90 jours sont des réglages serveur recommandés, non vérifiés par cette intégration. La notice ne les présente pas comme déjà appliqués. Vérifier ces paramètres dans Matomo et préciser ensuite les durées réelles dans la notice.
+## Vérification de configuration
+Le 31 octobre 2026 (heure de Paris), les captures du propriétaire montrent les réglages du site hatimchemji.github.io enregistrés et les critères contrôlés par Matomo marqués Compliant (enforced), notamment les IP masquées, la minimisation technique, la désactivation des profils/journaux individuels, les rapports agrégés, la désactivation des sessions et une conservation brute limitée à 759 jours. Le point Désinscription/opt-out est marqué Manual : le mécanisme client et sa notice sont inclus dans cette version et testés. Le module est activé avec CNIL_CONFIGURATION_VERIFIED=true. Maintenir ces restrictions dans Matomo et revérifier après tout changement d’usage ou de configuration. Les captures ne constituent pas un audit juridique global.
